@@ -34,43 +34,38 @@ int naiveFind(char* str, int strL, char* pat, int patL)
     return -1;
 }
 
-int finiteStateFind(char* str, const int strL, char* pat, const int patL)
+int finiteStateFind(char* str, int strL, char* pat, int patL)
 {
     int table[ASCII];
-    memset(table, -1, sizeof(table));
+    memset(table, 0, sizeof(table));
 
-    char distinct[patL];
-
-    int d=0;
+    int d=1;
     for (int i=0; i < patL; i++)
-        if (table[pat[i]] == -1) {
-            distinct[d] = pat[i];
+        if (table[pat[i]] == 0)
             table[pat[i]] = d++;
-        }
 
     // table maps character in pat to an index
     // d is how many distict character in pat
 
-    int states[patL][d];
-    memset(states, 0, sizeof(states));
+    int sts[patL][d];
+    memset(sts, 0, sizeof(sts));
 
     for (int i=0; i < patL; i++) {
-        states[i][0] = i;
-        for (int j=0; j < d; j++) {
-            if (distinct[j] == pat[i])
-                states[i][j] = i+1;
+        for (int j=1; j < d; j++) {
+            if (j == table[pat[i]])
+                sts[i][j] = i+1;
         }
     }
+    sts[1][1] = 1; // keep nfa looping at state 1 for pat[0] character
 
-    // finally - the state machine runnin g
+    // finally - the state machine running
     int state = 0;
-    int i;
-    for (i=0; state != patL && i < strL; i++)
-            state = states[state][table[str[i]]];
-
+    int i=0;
+    for (; state != patL && i < strL; i++) {
+            state = sts[state][table[str[i]]];
+    }
     if (state == patL)
         return i - patL;
-
     return -1;
 }
 
